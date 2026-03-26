@@ -40,7 +40,7 @@ public class TrafficServiceImpl implements TrafficService {
                                                                  trafficRequest.getFrameTime());
         if (trafficFlow != null)
             throw new AppException(ErrorCode.ERR_003);
-        TrafficFlow trafficFlowNew = trafficMapper.trafficRequestToTraffic(trafficRequest);
+        TrafficFlow trafficFlowNew = trafficMapper.trafficRequestToTrafficCreate(trafficRequest, roadId);
         trafficRepository.save(trafficFlowNew);
 
         roadService.updateFlowDay(roadId, flowDay(roadId, trafficRequest.getDate()));
@@ -55,8 +55,9 @@ public class TrafficServiceImpl implements TrafficService {
         TrafficFlow trafficFlow = trafficRepository.findById(trafficId).orElseThrow(()-> new AppException(ErrorCode.ERR_003));
         trafficMapper.updateTraffic(trafficRequest,trafficFlow);
         trafficRepository.save(trafficFlow);
-
-        roadService.updateFlowDay(roadId, flowDay(roadId, trafficRequest.getDate()));
+        Double flowDays = flowDay(roadId, trafficRequest.getDate());
+        roadService.updateFlowDay(roadId, flowDays);
+        log.info("updateTraffic");
         return trafficMapper.trafficToTrafficResponse(trafficFlow);
     }
 
@@ -68,6 +69,7 @@ public class TrafficServiceImpl implements TrafficService {
             Double traf = (flow.getCars()*0.2)+(flow.getBicycles()*0.5)+(flow.getMotorbikes()*0.7);
             flowDay =+ traf;
         }
+        log.info("flowDay={}",flowDay);
         return flowDay;
     }
 
